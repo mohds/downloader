@@ -12,6 +12,7 @@ using OpenPop.Pop3;
 using OpenPop.Mime;
 using System.IO;
 using System.Text.RegularExpressions;
+using YoutubeExtractor;
 
 namespace downloader
 {
@@ -19,6 +20,7 @@ namespace downloader
     {
         String message_text_file = "message_text.txt";
         String links_text_file = "links.txt";
+
         public Form1()
         {
             InitializeComponent();
@@ -37,8 +39,16 @@ namespace downloader
 
             message_parser(message_text_file);
 
+            StreamReader reader = File.OpenText(links_text_file);
+            String link = "";
+            while ((link = reader.ReadLine()) != null)
+            {
+                if (link.Contains("youtube") || link.Contains("youtu.be"))
+                {
+                    download_youtube_video(link);
+                }
+            }
 
-        
         }
         void FindPlainTextInMessage(OpenPop.Mime.Message message)
         {
@@ -75,6 +85,42 @@ namespace downloader
                     }
                 }
             }
+        }
+        void download_youtube_video(String youtube_link)
+        {
+            /*
+             * Get the available video formats.
+             * We'll work with them in the video and audio download examples.
+             */
+            IEnumerable<VideoInfo> videoInfos = DownloadUrlResolver.GetDownloadUrls(youtube_link);
+            /*
+             * Select the first .mp4 video with 360p resolution
+             */
+            VideoInfo video = videoInfos.First(info => info.VideoType == VideoType.Mp4 && info.Resolution == 360);
+
+            /*
+             * If the video has a decrypted signature, decipher it
+             */
+            if (video.RequiresDecryption)
+            {
+                DownloadUrlResolver.DecryptDownloadUrl(video);
+            }
+
+            /*
+             * Create the video downloader.
+             * The first argument is the video to download.
+             * The second argument is the path to save the video file.
+             */
+            var videoDownloader = new VideoDownloader(video, Path.Combine("M:/Downloads", video.Title + video.VideoExtension));
+
+            // Register the ProgressChanged event and print the current progress
+            //videoDownloader.DownloadProgressChanged += (sender, args) => Console.WriteLine(args.ProgressPercentage);
+
+            /*
+             * Execute the video downloader.
+             * For GUI applications note, that this method runs synchronously.
+             */
+            videoDownloader.Execute();
         }
     }
 }
