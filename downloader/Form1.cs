@@ -52,9 +52,7 @@ namespace downloader
             backgroundWorker3.DoWork += backgroundWorker3_DoWork;
             backgroundWorker3.ProgressChanged += backgroundWorker3_ProgressChanged;
             backgroundWorker3.WorkerReportsProgress = true;
-
-
-
+            
             labels.Add(label1);
         }
         private void populate_allowed_senders()
@@ -63,7 +61,7 @@ namespace downloader
             allowed_senders.Add("z.hteit@almayadeen.net");
             allowed_senders.Add("s.souwaidan@almayadeen.net");
             allowed_senders.Add("w.elahmar@almayadeen.net");
-            allowed_senders.Add("m.awad@almayadeen.net");
+            allowed_senders.Add("M.Awad@almayadeen.net");
             allowed_senders.Add("ma.saad@almayadeen.net");
             allowed_senders.Add("j.krayem@almayadeen.net");
             allowed_senders.Add("h.chreim@almayadeen.net");
@@ -74,8 +72,17 @@ namespace downloader
         void process_last_message()
         {
             var client = new Pop3Client();
-            client.Connect("pop.gmail.com", 995, true);
-            client.Authenticate("send2sharer@gmail.com", "manipulate");
+            try
+            {
+                client.Connect("pop.gmail.com", 995, true);
+                client.Authenticate("send2sharer@gmail.com", "manipulate");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                Console.WriteLine("Failed to authenticate with server");
+                return;
+            }
             var count = client.GetMessageCount();
 
             if (count > 0)
@@ -94,6 +101,17 @@ namespace downloader
                     // security
                     if (!(allowed_senders.Contains(sender)))
                     {
+                        // delete message to not process again
+                        try
+                        {
+                            client.DeleteMessage(count);
+                            client.Disconnect();
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine(ex.ToString());
+                        }
+                        Console.WriteLine("No access for " + sender);
                         return;
                     }
 
@@ -145,6 +163,8 @@ namespace downloader
                 // all workers done
                 send_email(sender);
             }
+            //client.Disconnect();
+            //client.Dispose();                       
             Thread.Sleep(1000);
         }
 
@@ -242,6 +262,11 @@ namespace downloader
             video_title = video_title.Replace(@"\", "");
             video_title = video_title.Replace("/", "");
             video_title = video_title.Replace('"', ' ').Trim();
+            var charsToRemove = new string[] { "@", ",", ".", ";", "'", @"\", "/", "?", "|", "}", "{", "[", "]", "<", ">", "$", "%", "^", "*", "!", "#", "=", "+", " ", "é", "ë", "ç", ":", "\"" };
+            foreach (var c in charsToRemove)
+            {
+                video_title = video_title.Replace(c, " ");
+            }
 
             download_path = Path.Combine(downloads_folder, video_title + video.VideoExtension);
             file_name = video_title + video.VideoExtension;
@@ -403,15 +428,15 @@ namespace downloader
         private void backgroundWorker2_DoWork(object sender, DoWorkEventArgs e)
         {
             String link = e.Argument.ToString();
-            //try
-            //{
+            try
+            {
                 download_youtube_video(link);
-            //}
-            /*catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 Console.WriteLine("Could not download: " + link);
                 failed_links.Add(link);
-            }*/
+            }
             if (workers_busy.Count > 0)
             {
                 workers_busy.Remove(workers_busy[0]);
