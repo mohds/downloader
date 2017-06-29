@@ -478,26 +478,30 @@ namespace downloader
                 Credentials = new NetworkCredential("send2sharer@gmail.com", "manipulate"),
                 EnableSsl = true
             };
-            String message_body = "";
-            message_body += "On sharer:\n";
-            foreach(var title in downloaded_videos)
+            String message_body = "<strong>On sharer: </strong><br><br>";
+            message_body += "<font color = 'red'>";
+            foreach (var title in downloaded_videos)
             {
-                message_body += title + "\n";
+                message_body += title + "<br>";
             }
-            if(failed_links.Count > 0)
+            message_body += "</font>";
+            if (failed_links.Count > 0)
             {
-                message_body += "\nFailed links:\n";
-                foreach(var link in failed_links)
+                message_body += "<br><strong>Failed links:</strong><br>";
+                message_body += "<font color = 'red'>";
+                foreach (var link in failed_links)
                 {
-                    message_body += link + "\n";
+                    message_body += link + "<br>";
                 }
+                message_body += "</font>";
             }
-            message_body += "\nRegards,\n";
-            message_body += "Download Assistant\n";
-            client.Send("send2sharer@gmail.com", to, "On sharer", message_body);
+            message_body += "<br>Regards,<br>";
+            message_body += "<strong>Download Assistant</strong><br>";
+            MailMessage msg = new MailMessage("send2sharer@gmail.com", to, "On sharer", message_body);
+            msg.IsBodyHtml = true;
+            client.Send(msg);
             Console.WriteLine("Email sent");
         }
-
 
     }
 }
