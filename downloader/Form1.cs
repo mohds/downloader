@@ -31,6 +31,7 @@ namespace downloader
         BackgroundWorker backgroundWorker1 = new BackgroundWorker();
         BackgroundWorker backgroundWorker2 = new BackgroundWorker(); // leave it be
         BackgroundWorker backgroundWorker3 = new BackgroundWorker();
+        BackgroundWorker backgroundWorker4 = new BackgroundWorker(); // for saveitoffline
         List<String> workers_busy = new List<string>(); // a list in which each worker states that they are busy
         List<Label> labels = new List<Label>(); // to keep track of label positions
         List<Label> label_statuses = new List<Label>(); // status manipulation
@@ -138,6 +139,15 @@ namespace downloader
                                 worker.RunWorkerAsync(link);
                                 workers_busy.Add("busy");
                             }
+                            else
+                            {
+                                BackgroundWorker worker = new BackgroundWorker();
+                                worker.DoWork += new DoWorkEventHandler(backgroundWorker4_DoWork);
+                                worker.ProgressChanged += new ProgressChangedEventHandler(backgroundWorker4_ProgressChanged);
+                                worker.WorkerReportsProgress = true;
+                                worker.RunWorkerAsync(link);
+                                workers_busy.Add("busy");
+                            }
                             Thread.Sleep(1000);
                         }
                     }
@@ -206,6 +216,15 @@ namespace downloader
                 }
             }
             return return_me;
+        }
+        String download_saveitoffline(String link)
+        {
+            String video_title = "";
+
+
+            // add name to downloaded videos when done
+
+            return video_title;
         }
         String download_youtube_video(String youtube_link)
         {
@@ -448,34 +467,39 @@ namespace downloader
         }
         private void backgroundWorker3_DoWork(object sender, DoWorkEventArgs e)
         {
-            /*
-            while (true)
-            {
-                // interface handling
-                if (labels_to_add.Count > 0)
-                {
-                    int index = labels_to_add.Count - 1;
-                    add_row(labels_to_add[index], label_statuses[index].Text);
-                    labels_to_add.Remove(labels_to_add[index]);
-                }
-                if (status_updated != 0)
-                {
-                    this.SafeInvoke(d => d.Refresh());
-                    status_updated = 0;
-                }
-                Thread.Sleep(100);
-            }*/
+
         }
         private void backgroundWorker3_ProgressChanged(object sender, System.ComponentModel.ProgressChangedEventArgs e)
         {
 
 
         }
+        private void backgroundWorker4_DoWork(object sender, DoWorkEventArgs e)
+        {
+            String link = e.Argument.ToString();
+            try
+            {
+                // download link
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Could not download: " + link);
+                failed_links.Add(link);
+            }
+            if (workers_busy.Count > 0)
+            {
+                workers_busy.Remove(workers_busy[0]);
+            }
+        }
+        private void backgroundWorker4_ProgressChanged(object sender, System.ComponentModel.ProgressChangedEventArgs e)
+        {
+
+        }
         private void send_email(String to)
         {
             var client = new SmtpClient("smtp.gmail.com", 587)
             {
-                Credentials = new NetworkCredential("send2sharer@gmail.com", "manipulate"),
+                Credentials = new NetworkCredential("send2sharer@gmail.com", "s3ndm3n0w"),
                 EnableSsl = true
             };
             String message_body = "<strong>On sharer: </strong><br><br>";
