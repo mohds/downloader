@@ -53,7 +53,7 @@ namespace downloader
             backgroundWorker3.DoWork += backgroundWorker3_DoWork;
             backgroundWorker3.ProgressChanged += backgroundWorker3_ProgressChanged;
             backgroundWorker3.WorkerReportsProgress = true;
-            
+
             labels.Add(label1);
         }
         private void populate_allowed_senders()
@@ -124,7 +124,7 @@ namespace downloader
                     FindPlainTextInMessage(message);
 
                     if (message_parser(message_text_file)) // returns true on success
-                    { 
+                    {
 
                         StreamReader reader = File.OpenText(links_text_file);
                         String link = "";
@@ -157,7 +157,7 @@ namespace downloader
                     {
                         client.DeleteMessage(count);
                     }
-                    catch(Exception ex)
+                    catch (Exception ex)
                     {
                         Console.WriteLine(ex.ToString());
                     }
@@ -166,7 +166,7 @@ namespace downloader
                     // remove from currently processing messages
                     messages_currently_processing.Remove(message);
                 }
-                while(workers_busy.Count > 0)
+                while (workers_busy.Count > 0)
                 {
                     // halt while workers work
                 }
@@ -177,7 +177,6 @@ namespace downloader
             //client.Dispose();                       
             Thread.Sleep(1000);
         }
-
         void FindPlainTextInMessage(OpenPop.Mime.Message message)
         {
             MessagePart plainText = message.FindFirstPlainTextVersion();
@@ -215,20 +214,145 @@ namespace downloader
                     }
                 }
             }
+            reader.Close();
             return return_me;
         }
         String download_saveitoffline(String link)
         {
-            String video_title = "";
+            Console.WriteLine("downloading " + link + " using Saveitoffline.");
+            int link_count = 0;
+            string video_title = "video";
+            string final_download_url = "";
+            string uri = "https://www.saveitoffline.com/process/?url=";
+            uri = uri + link + "&type=text";
 
+            System.Net.WebRequest req = System.Net.WebRequest.Create(uri);
+            System.Net.WebResponse resp = req.GetResponse();
 
-            // add name to downloaded videos when done
+            string saveitoffline_response_file = @"C:\saveitoffline_response_" + link_count.ToString() + ".txt";
+            File.Create(saveitoffline_response_file).Dispose();
+
+            using (StreamReader readerr = new StreamReader(resp.GetResponseStream()))
+            {
+                File.AppendAllText(saveitoffline_response_file, readerr.ReadToEnd().Replace("<br />", Environment.NewLine));
+            }
+
+            string line;
+
+            System.IO.StreamReader response_file = new System.IO.StreamReader(saveitoffline_response_file);
+            while ((line = response_file.ReadLine()) != null)
+            {
+                if (line.Contains("title:"))
+                {
+                    string[] parts = line.Split(new[] { "title:" }, StringSplitOptions.None);
+                    video_title = parts[1];
+                }
+                if (line.Contains("get/?i="))
+                {
+                    string[] parts = line.Split(new[] { "get/?i=" }, StringSplitOptions.None);
+                    final_download_url = "https://www.saveitoffline.com/get/?i=" + parts[1];
+                    break;
+                }
+            }
+            response_file.Close();
+            if (File.Exists(saveitoffline_response_file))
+            {
+                File.Delete(saveitoffline_response_file);
+            }
+
+            if (final_download_url == "")
+            {
+                Console.WriteLine("Saveitoffline could not retrieve download link for: " + link);
+                failed_links.Add(link);
+                return video_title;
+            }
+
+            video_title = download_video(video_title, final_download_url);
+
+            // move file to sharer
+            String source_path = downloads_folder + "/" + video_title + ".mp4";
+            String destination_path = destination_folder + "\\" + video_title + ".mp4";
+            try
+            {
+                File.Move(source_path, destination_path);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Could not move file. Error:\n" + ex.ToString());
+            }
+
+            downloaded_videos.Add(video_title);
 
             return video_title;
         }
+        private string download_video(string title, string url)
+        {
+            //Console.WriteLine("URL: " + url);
+            var charsToRemove = new string[] { "@", ",", ".", ";", "'", @"\", "/", "?", "|", "}", "{", "[", "]", "<", ">", "$", "%", "^", "*", "!", "#", "=", "+", " ", "é", "ë", "ç", ":", "\"" };
+            foreach (var c in charsToRemove)
+            {
+                title = title.Replace(c, " ");
+            }
+            title.Replace("  ", " ");
+
+            if (url != "")
+            {
+                // index of status for later use
+                int index_status = 0;
+                Console.WriteLine("Started downloading: " + title);
+                add_row(title, "Started");
+                index_status = label_statuses.Count - 1;
+
+                try
+                {
+                    WebClient client = new WebClient();
+                    client.OpenRead(url);
+                    double video_size = Convert.ToDouble(client.ResponseHeaders["Content-Length"]);
+                    // convert to MB
+                    video_size = video_size / 1000000;
+                    client.DownloadProgressChanged += (sender, args) => {
+                        String percentage_downloaded_str = args.ProgressPercentage.ToString();
+                        double percentage_downloaded = Convert.ToDouble(percentage_downloaded_str);
+                        percentage_downloaded = percentage_downloaded / 100;
+                        double size_downloaded = percentage_downloaded * video_size;
+                        video_size = Math.Round(video_size, 2);
+                        size_downloaded = Math.Round(size_downloaded, 2);
+                        String display_me = size_downloaded.ToString() + "MB / " + video_size.ToString() + "MB";
+                        label_statuses[index_status].SafeInvoke(d => d.Text = display_me);
+                        this.SafeInvoke(d => d.Refresh());
+                    };
+                    client.DownloadFile(url, downloads_folder + "\\" + title + ".mp4");
+                }
+                catch
+                {
+                    WebClient client = new WebClient();
+                    Thread.Sleep(3000);
+                    client.OpenRead(url);
+                    double video_size = Convert.ToDouble(client.ResponseHeaders["Content-Length"]);
+                    // convert to MB
+                    video_size = video_size / 1000000;
+                    client.DownloadProgressChanged += (sender, args) => {
+                        String percentage_downloaded_str = args.ProgressPercentage.ToString();
+                        double percentage_downloaded = Convert.ToDouble(percentage_downloaded_str);
+                        percentage_downloaded = percentage_downloaded / 100;
+                        double size_downloaded = percentage_downloaded * video_size;
+                        video_size = Math.Round(video_size, 2);
+                        size_downloaded = Math.Round(size_downloaded, 2);
+                        String display_me = size_downloaded.ToString() + "MB / " + video_size.ToString() + "MB";
+                        label_statuses[index_status].SafeInvoke(d => d.Text = display_me);
+                        this.SafeInvoke(d => d.Refresh());
+                    };
+                    client.DownloadFile(url, downloads_folder + "\\" + title + ".mp4");
+                }
+
+                // done
+                label_statuses[index_status].SafeInvoke(d => d.Text = "Done");
+                this.SafeInvoke(d => d.Refresh());
+            }
+            return title;
+        }
         String download_youtube_video(String youtube_link)
         {
-            
             String download_path = "";
             String file_name = "";
             String video_title = "";
@@ -242,14 +366,12 @@ namespace downloader
                 videoInfos = DownloadUrlResolver.GetDownloadUrls(youtube_link);
 
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Console.WriteLine(ex.ToString());
                 Console.WriteLine("GetDownloadUrls() failed, trying again...");
                 videoInfos = DownloadUrlResolver.GetDownloadUrls(youtube_link);
-                
             }
-            
             /*
              * Select the first .mp4 video with 360p resolution
              */
@@ -258,7 +380,6 @@ namespace downloader
             double video_size = extract_video_size(video.DownloadUrl);
             // convert to MB
             video_size = video_size / 1000000;
-
             /*
              * If the video has a decrypted signature, decipher it
              */
@@ -266,17 +387,16 @@ namespace downloader
             {
                 DownloadUrlResolver.DecryptDownloadUrl(video);
             }
-
             /*
              * Create the video downloader.
              * The first argument is the video to download.
              * The second argument is the path to save the video file.
              */
             file_name = video.Title + video.VideoExtension;
-            
+
             video_title = video.Title;
             video_title = video_title.Substring(0, video_title.Length / 2);
-            
+
             video_title = video_title.Replace(":", "");
             video_title = video_title.Replace(@"\", "");
             video_title = video_title.Replace("/", "");
@@ -312,7 +432,6 @@ namespace downloader
                     //label_statuses[index_status].SafeInvoke(d => d.Text = args.ProgressPercentage.ToString());
                     String percentage_downloaded_str = args.ProgressPercentage.ToString();
                     double percentage_downloaded = Convert.ToDouble(percentage_downloaded_str);
-                    
                     percentage_downloaded = percentage_downloaded / 100;
                     double size_downloaded = percentage_downloaded * video_size;
                     video_size = Math.Round(video_size, 2);
@@ -321,9 +440,9 @@ namespace downloader
                     label_statuses[index_status].SafeInvoke(d => d.Text = display_me);
                 };
 
-                videoDownloader.Execute();                
+                videoDownloader.Execute();
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Console.WriteLine(ex.ToString());
 
@@ -375,7 +494,7 @@ namespace downloader
             int video_size = 1;
             String[] sections;
             sections = video_url.Split('&');
-            foreach(var section in sections)
+            foreach (var section in sections)
             {
                 if (section.Contains("clen="))
                 {
@@ -389,9 +508,9 @@ namespace downloader
         private int get_number_of_chars_in_string(String line, char char_to_count)
         {
             int count = 0;
-            for(int i = 0; i < line.Count(); i++)
+            for (int i = 0; i < line.Count(); i++)
             {
-                if(line[i] == char_to_count)
+                if (line[i] == char_to_count)
                 {
                     count++;
                 }
@@ -410,7 +529,7 @@ namespace downloader
             backgroundWorker1.RunWorkerAsync();
             button1.Enabled = false;
             backgroundWorker3.RunWorkerAsync();
-            
+
         }
         private void add_row(String title, String status)
         {
@@ -480,6 +599,7 @@ namespace downloader
             try
             {
                 // download link
+                download_saveitoffline(link);
             }
             catch (Exception ex)
             {

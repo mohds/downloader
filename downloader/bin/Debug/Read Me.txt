@@ -1,0 +1,11 @@
+   _____ ___    __    __    ____  __  ____  ___
+  / ___//   |  / /   / /   / __ \/ / / /  |/  /
+  \__ \/ /| | / /   / /   / / / / / / / /|_/ / 
+ ___/ / ___ |/ /___/ /___/ /_/ / /_/ / /  / /  
+/____/_/  |_/_____/_____/\____/\____/_/  /_/   
+                                               
+1. Copy the whole Download Assistant folder to your computer
+2. Create a new folder on the C:\ drive and name it downloads
+3. Run downloader.exe
+4. Click the start button on the top left corner of the program
+5. Enjoy
