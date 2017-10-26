@@ -69,6 +69,7 @@ namespace downloader
             allowed_senders.Add("a.hammoud@almayadeen.net");
             allowed_senders.Add("a.kobeissi@almayadeen.net");
             allowed_senders.Add("r.dagher@almayadeen.net");
+            allowed_senders.Add("m.salloum.94@hotmail.com");
         }
         void process_last_message()
         {
@@ -76,7 +77,7 @@ namespace downloader
             try
             {
                 client.Connect("pop.gmail.com", 995, true);
-                client.Authenticate("send2sharer@gmail.com", "manipulate");
+                client.Authenticate("send2sharer@gmail.com", "s3ndm3later");
             }
             catch (Exception ex)
             {
@@ -395,7 +396,11 @@ namespace downloader
             file_name = video.Title + video.VideoExtension;
 
             video_title = video.Title;
-            video_title = video_title.Substring(0, video_title.Length / 2);
+            int number_of_spaces = get_number_of_chars_in_string(video_title, ' ');
+            int space_to_stop_on = number_of_spaces / 2; // we want to reach half way through the string only
+
+            video_title = get_string_after_character_occurences(video_title, ' ', space_to_stop_on);
+            //video_title = video_title.Substring(0, video_title.Length / 2);
 
             video_title = video_title.Replace(":", "");
             video_title = video_title.Replace(@"\", "");
@@ -488,6 +493,29 @@ namespace downloader
             // status_updated = index_status; // it is only required to change it from 0 (so far)
 
             return file_name;
+        }
+        private string get_string_after_character_occurences(string s, char c, int occurences)
+        {
+            string return_me = "";
+            int occurences_count = 0;
+            for (int i = 0; i < s.Length; i++)
+            {
+                if (occurences == occurences_count)
+                {
+                    break;
+                }
+                else
+                {
+                    return_me += s[i];
+                    //return_me = return_me.Insert(i, s.Substring(i,1));
+                    if (s[i] == c)
+                    {
+                        occurences_count++;
+                    }
+                }
+            }
+
+            return return_me;
         }
         private int extract_video_size(String video_url)
         {
@@ -619,7 +647,7 @@ namespace downloader
         {
             var client = new SmtpClient("smtp.gmail.com", 587)
             {
-                Credentials = new NetworkCredential("send2sharer@gmail.com", "s3ndm3n0w"),
+                Credentials = new NetworkCredential("send2sharer@gmail.com", "s3ndm3later"),
                 EnableSsl = true
             };
             String message_body = "<strong>On sharer: </strong><br><br>";

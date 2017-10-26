@@ -21,3 +21,16 @@ C:\Users\m.salloum\Desktop\downloader\downloader\obj\Debug\downloader.csprojReso
 C:\Users\m.salloum\Desktop\downloader\downloader\obj\Debug\downloader.Form1.resources
 C:\Users\m.salloum\Desktop\downloader\downloader\obj\Debug\downloader.Properties.Resources.resources
 C:\Users\m.salloum\Desktop\downloader\downloader\obj\Debug\downloader.csproj.GenerateResource.Cache
+C:\Users\Mohammad\Desktop\downloader\downloader\bin\Debug\downloader.exe.config
+C:\Users\Mohammad\Desktop\downloader\downloader\bin\Debug\downloader.exe
+C:\Users\Mohammad\Desktop\downloader\downloader\bin\Debug\downloader.pdb
+C:\Users\Mohammad\Desktop\downloader\downloader\bin\Debug\Newtonsoft.Json.dll
+C:\Users\Mohammad\Desktop\downloader\downloader\bin\Debug\YoutubeExtractor.pdb
+C:\Users\Mohammad\Desktop\downloader\downloader\bin\Debug\Newtonsoft.Json.xml
+C:\Users\Mohammad\Desktop\downloader\downloader\obj\Debug\downloader.csprojResolveAssemblyReference.cache
+C:\Users\Mohammad\Desktop\downloader\downloader\obj\Debug\downloader.Form1.resources
+C:\Users\Mohammad\Desktop\downloader\downloader\obj\Debug\downloader.Properties.Resources.resources
+C:\Users\Mohammad\Desktop\downloader\downloader\obj\Debug\downloader.csproj.GenerateResource.Cache
+C:\Users\Mohammad\Desktop\downloader\downloader\obj\Debug\downloader.csproj.CoreCompileInputs.cache
+C:\Users\Mohammad\Desktop\downloader\downloader\obj\Debug\downloader.exe
+C:\Users\Mohammad\Desktop\downloader\downloader\obj\Debug\downloader.pdb
