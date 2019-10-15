@@ -13,7 +13,8 @@ using OpenPop.Pop3;
 using OpenPop.Mime;
 using System.IO;
 using System.Text.RegularExpressions;
-using YoutubeExtractor;
+//using YoutubeExtractor;
+using VideoLibrary;
 using System.Net;
 
 namespace downloader
@@ -357,119 +358,38 @@ namespace downloader
             String download_path = "";
             String file_name = "";
             String video_title = "";
-            /*
-             * Get the available video formats.
-             * We'll work with them in the video and audio download examples.
-             */
-            IEnumerable<VideoInfo> videoInfos;
-            try
-            {
-                videoInfos = DownloadUrlResolver.GetDownloadUrls(youtube_link);
+            String video_extension = "";
 
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.ToString());
-                Console.WriteLine("GetDownloadUrls() failed, trying again...");
-                videoInfos = DownloadUrlResolver.GetDownloadUrls(youtube_link);
-            }
-            /*
-             * Select the first .mp4 video with 360p resolution
-             */
-            VideoInfo video = videoInfos.First(info => info.VideoType == VideoType.Mp4 && info.Resolution == 360);
+            var youtube = YouTube.Default;
+            var videoInfos = youtube.GetVideo(youtube_link);
 
-            double video_size = extract_video_size(video.DownloadUrl);
-            // convert to MB
-            video_size = video_size / 1000000;
-            /*
-             * If the video has a decrypted signature, decipher it
-             */
-            if (video.RequiresDecryption)
-            {
-                DownloadUrlResolver.DecryptDownloadUrl(video);
-            }
-            /*
-             * Create the video downloader.
-             * The first argument is the video to download.
-             * The second argument is the path to save the video file.
-             */
-            file_name = video.Title + video.VideoExtension;
+            video_title = videoInfos.Title;
+            video_extension = ".mp4";
 
-            video_title = video.Title;
+            // fix video title
             int number_of_spaces = get_number_of_chars_in_string(video_title, ' ');
             int space_to_stop_on = number_of_spaces / 2; // we want to reach half way through the string only
-
             video_title = get_string_after_character_occurences(video_title, ' ', space_to_stop_on);
             //video_title = video_title.Substring(0, video_title.Length / 2);
-
             video_title = video_title.Replace(":", "");
             video_title = video_title.Replace(@"\", "");
             video_title = video_title.Replace("/", "");
             video_title = video_title.Replace('"', ' ').Trim();
-            var charsToRemove = new string[] { "@", ",", ".", ";", "'", @"\", "/", "?", "|", "}", "{", "[", "]", "<", ">", "$", "%", "^", "*", "!", "#", "=", "+", " ", "é", "ë", "ç", ":", "\"" };
+            var charsToRemove = new string[] { "@", ",", ".", ";", "'", @"\", "/", "?", "|", "}", "{", "[", "]", "<", ">", "$", "%", "^", "*", "!", "#", "=", "+", " ", "é", "ë", "ç", ":", "\"" };
             foreach (var c in charsToRemove)
             {
                 video_title = video_title.Replace(c, " ");
             }
 
-            download_path = Path.Combine(downloads_folder, video_title + video.VideoExtension);
-            file_name = video_title + video.VideoExtension;
-            var videoDownloader = new VideoDownloader(video, download_path);
+            file_name = video_title + video_extension;
+            download_path = Path.Combine(downloads_folder, file_name);
 
-            // Register the ProgressChanged event and print the current progress
-            // videoDownloader.DownloadProgressChanged += (sender, args) => Console.WriteLine(args.ProgressPercentage);
-
-            /*
-             * Execute the video downloader.
-             * For GUI applications note, that this method runs synchronously.
-             */
-
-            // index of status for later use
             int index_status = 0;
+            Console.WriteLine("Started downloading: " + video_title);
+            add_row(video_title, "Downloading");
+            index_status = label_statuses.Count - 1;
 
-            try
-            {
-                Console.WriteLine("Started downloading: " + video_title);
-                add_row(video_title, "Started");
-                index_status = label_statuses.Count - 1;
-
-                videoDownloader.DownloadProgressChanged += (sender, args) => {
-                    //label_statuses[index_status].SafeInvoke(d => d.Text = args.ProgressPercentage.ToString());
-                    String percentage_downloaded_str = args.ProgressPercentage.ToString();
-                    double percentage_downloaded = Convert.ToDouble(percentage_downloaded_str);
-                    percentage_downloaded = percentage_downloaded / 100;
-                    double size_downloaded = percentage_downloaded * video_size;
-                    video_size = Math.Round(video_size, 2);
-                    size_downloaded = Math.Round(size_downloaded, 2);
-                    String display_me = size_downloaded.ToString() + "MB / " + video_size.ToString() + "MB";
-                    label_statuses[index_status].SafeInvoke(d => d.Text = display_me);
-                };
-
-                videoDownloader.Execute();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.ToString());
-
-                // try again
-                try
-                {
-                    Console.WriteLine("Started downloading: " + video_title);
-                    add_row(video_title, "Started");
-                    index_status = label_statuses.Count - 1;
-                    videoDownloader.Execute();
-                }
-                catch
-                {
-                    // exit function
-                    return file_name;
-                }
-            }
-
-            // to check title-status harmony
-            //label_statuses[index_status].SafeInvoke(d => d.Text = video_title);
-            //label_statuses[index_status].Text = index_status.ToString();
-            //this.SafeInvoke(d => d.Refresh());
+            File.WriteAllBytes(download_path, videoInfos.GetBytes());
 
             // move file to sharer
             String source_path = downloads_folder + "/" + file_name;
@@ -489,6 +409,9 @@ namespace downloader
             // update interface
             // label_statuses[index_status].Text = "Done";
             label_statuses[index_status].SafeInvoke(d => d.Text = "Done");
+            label_statuses[index_status].SafeInvoke(d => d.ForeColor = Color.Green);
+            labels[index_status+1].SafeInvoke(d => d.ForeColor = Color.Green);
+
             this.SafeInvoke(d => d.Refresh());
             // status_updated = index_status; // it is only required to change it from 0 (so far)
 
@@ -564,7 +487,7 @@ namespace downloader
             Label label_title = new Label();
             Label label_status = new Label();
             label_title.Width = 100;
-            label_status.Width = 300;
+            label_status.Width = 100;
             int workers_count = workers_busy.Count + 1;
             label_title.Text = title;
             label_status.Text = status;

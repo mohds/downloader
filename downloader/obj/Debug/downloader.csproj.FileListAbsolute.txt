@@ -34,3 +34,17 @@ C:\Users\Mohammad\Desktop\downloader\downloader\obj\Debug\downloader.csproj.Gene
 C:\Users\Mohammad\Desktop\downloader\downloader\obj\Debug\downloader.csproj.CoreCompileInputs.cache
 C:\Users\Mohammad\Desktop\downloader\downloader\obj\Debug\downloader.exe
 C:\Users\Mohammad\Desktop\downloader\downloader\obj\Debug\downloader.pdb
+C:\Users\Mohammad\Desktop\downloader-master\downloader\bin\Debug\downloader.exe.config
+C:\Users\Mohammad\Desktop\downloader-master\downloader\bin\Debug\downloader.exe
+C:\Users\Mohammad\Desktop\downloader-master\downloader\bin\Debug\downloader.pdb
+C:\Users\Mohammad\Desktop\downloader-master\downloader\bin\Debug\Newtonsoft.Json.dll
+C:\Users\Mohammad\Desktop\downloader-master\downloader\bin\Debug\Newtonsoft.Json.xml
+C:\Users\Mohammad\Desktop\downloader-master\downloader\obj\Debug\downloader.csprojAssemblyReference.cache
+C:\Users\Mohammad\Desktop\downloader-master\downloader\obj\Debug\downloader.Form1.resources
+C:\Users\Mohammad\Desktop\downloader-master\downloader\obj\Debug\downloader.Properties.Resources.resources
+C:\Users\Mohammad\Desktop\downloader-master\downloader\obj\Debug\downloader.csproj.GenerateResource.cache
+C:\Users\Mohammad\Desktop\downloader-master\downloader\obj\Debug\downloader.csproj.CopyComplete
+C:\Users\Mohammad\Desktop\downloader-master\downloader\obj\Debug\downloader.exe
+C:\Users\Mohammad\Desktop\downloader-master\downloader\obj\Debug\downloader.pdb
+C:\Users\Mohammad\Desktop\downloader-master\downloader\bin\Debug\YoutubeExtractor.dll
+C:\Users\Mohammad\Desktop\downloader-master\downloader\bin\Debug\YoutubeExtractor.xml

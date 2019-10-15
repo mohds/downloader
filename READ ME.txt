@@ -1,2 +1,2 @@
-Create a downloads folder on C
+Create a new folder in C:\ and name it "downloads"
 Find the .exe file in: downloader-master\downloader\bin\Debug under the name: downloader.exe
